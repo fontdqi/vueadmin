@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import  {useTokenStore}  from '@/stores/tokenStore'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,17 +8,40 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: () => import('../views/home/index.vue'),
+      meta: {
+        name: 'Home',
+        authRequired: true
+      }
+
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
+      path: '/login',
+      name: 'Login',
+      // meta: {
+      //   title: 'Login',
+      //   authRequired: true
+      // },
+
+      component: () => import('../views/login/index.vue')
     }
   ]
-})
+});
+
+
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+  const tokenStore = useTokenStore();
+  console.log('得到了',tokenStore.accessToken);
+  if (to.meta.authRequired) {
+    if (tokenStore.accessToken) {
+      next();
+    } else {
+      next( '/login' );
+    }
+  } else {
+    next();
+  }
+});
 
 export default router
